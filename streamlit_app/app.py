@@ -1,11 +1,18 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import os
+import duckdb
+
+# --- Paths ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(BASE_DIR, "../output")
 
 # Load cleaned dataset
 @st.cache_data
 def load_data():
-    return pd.read_parquet("../output/ola_clean.parquet")
+    file_path = os.path.join(BASE_DIR, "./output/ola_clean.parquet")
+    return pd.read_parquet(file_path)
 
 df = load_data()
 
@@ -39,13 +46,8 @@ col4.metric("Cancellation Rate",
 # --- Charts ---
 st.subheader("📊 Ride Volume Over Time")
 if "Date" in filtered_df.columns:
-    # Ensure Date is in datetime format
     filtered_df["Date"] = pd.to_datetime(filtered_df["Date"], errors="coerce")
-    
-    # Resample daily
     daily = filtered_df.set_index("Date").resample("D").size().reset_index(name="rides")
-    
-    # Plot
     fig = px.line(daily, x="Date", y="rides", title="Daily Rides")
     st.plotly_chart(fig, use_container_width=True)
 
@@ -69,7 +71,7 @@ if "vehicle_type" in filtered_df.columns:
         x="vehicle_type",
         y="distance_km",
         title="Top 5 Vehicle Types by Distance",
-        text=vt["distance_km"].apply(lambda x: f"{x:,.0f} km")  # ✅ full numbers + km
+        text=vt["distance_km"].apply(lambda x: f"{x:,.0f} km")
     )
     fig.update_traces(textposition="outside")
     st.plotly_chart(fig, use_container_width=True)
@@ -79,26 +81,22 @@ if "customer_rating" in filtered_df.columns:
     fig = px.histogram(filtered_df, x="customer_rating", nbins=10, title="Customer Rating Distribution")
     st.plotly_chart(fig, use_container_width=True)
 
-# --- SQL Queries Viewer (Optional) ---
+# --- SQL Queries Viewer ---
 st.sidebar.subheader("SQL Query Explorer")
-with open("../output/sql_queries.sql", "r") as f:
+with open(os.path.join(BASE_DIR, "./output/sql_queries.sql"), "r") as f:
     sql_queries = f.read().split("-- ")
-for q in sql_queries[1:]:  # first split is empty
+for q in sql_queries[1:]:
     title, query = q.split("\n", 1)
     if st.sidebar.button(title.strip()):
         st.code(query.strip(), language="sql")
 
 # --- SQL Query Runner ---
 st.header("🔎 SQL Query Explorer")
-
-# Load your pre-generated SQL queries
-with open("../output/sql_queries.sql", "r") as f:
+with open(os.path.join(BASE_DIR, "./output/sql_queries.sql"), "r") as f:
     sql_queries = f.read().split("-- ")
 
-# Register dataframe as table in DuckDB
-import duckdb
 con = duckdb.connect()
-con.register("ola_clean", df)   # <-- table name matches your SQL queries
+con.register("ola_clean", df)
 
 for q in sql_queries[1:]:
     title, query = q.split("\n", 1)
@@ -107,7 +105,7 @@ for q in sql_queries[1:]:
         st.code(query, language="sql")
         try:
             result = con.execute(query).fetchdf()
-            st.dataframe(result.head(50))   # show top 50 rows
+            st.dataframe(result.head(50))
             st.download_button(
                 "Download CSV",
                 result.to_csv(index=False).encode("utf-8"),
