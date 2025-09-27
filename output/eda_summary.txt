@@ -1,0 +1,19 @@
+Quick EDA summary
+total_rides: 103024
+completed_rides: 63967
+cancellations: 0
+total_revenue: 56534614.0
+avg_driver_rating: None
+avg_customer_rating: 3.9983131927400057
+
+Detected canonical columns:
+ride_id -> Booking_ID
+status -> Booking_Status
+payment_method -> Payment_Method
+vehicle_type -> Vehicle_Type
+distance_km -> Ride_Distance
+total_amount -> Booking_Value
+customer_rating -> Customer_Rating
+customer_id -> Customer_ID
+
+Rows dropped due to duplicate ride_id: 0

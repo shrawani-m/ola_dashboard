@@ -1,0 +1,9 @@
+Detected canonical columns mapping (logical_name -> original_column_name):
+ride_id -> Booking_ID
+status -> Booking_Status
+payment_method -> Payment_Method
+vehicle_type -> Vehicle_Type
+distance_km -> Ride_Distance
+total_amount -> Booking_Value
+customer_rating -> Customer_Rating
+customer_id -> Customer_ID
