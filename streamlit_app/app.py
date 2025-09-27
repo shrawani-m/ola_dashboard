@@ -1,23 +1,17 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os
 import duckdb
-
-# --- Paths ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(BASE_DIR, "../output")
-
-# Load cleaned dataset
-@st.cache_data
-def load_data():
-    file_path = os.path.join(BASE_DIR, "./output/ola_clean.parquet")
-    return pd.read_parquet(file_path)
-
-df = load_data()
 
 st.set_page_config(page_title="Ola Ride Insights", layout="wide")
 st.title("🚕 Ola Ride Insights Dashboard")
+
+# --- Load cleaned dataset ---
+@st.cache_data
+def load_data():
+    return pd.read_parquet("../output/ola_clean.parquet")
+
+df = load_data()
 
 # --- Sidebar Filters ---
 st.sidebar.header("Filters")
@@ -83,7 +77,7 @@ if "customer_rating" in filtered_df.columns:
 
 # --- SQL Queries Viewer ---
 st.sidebar.subheader("SQL Query Explorer")
-with open(os.path.join(BASE_DIR, "./output/sql_queries.sql"), "r") as f:
+with open("../output/sql_queries.sql", "r") as f:
     sql_queries = f.read().split("-- ")
 for q in sql_queries[1:]:
     title, query = q.split("\n", 1)
@@ -92,7 +86,7 @@ for q in sql_queries[1:]:
 
 # --- SQL Query Runner ---
 st.header("🔎 SQL Query Explorer")
-with open(os.path.join(BASE_DIR, "./output/sql_queries.sql"), "r") as f:
+with open("../output/sql_queries.sql", "r") as f:
     sql_queries = f.read().split("-- ")
 
 con = duckdb.connect()
