@@ -1,11 +1,16 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import duckdb
+from pathlib import Path
 
-# Load cleaned dataset
+# --- Setup base directory ---
+BASE_DIR = Path(__file__).resolve().parent
+
+# --- Load cleaned dataset ---
 @st.cache_data
 def load_data():
-    return pd.read_parquet("../output/ola_clean.parquet")
+    return pd.read_parquet(BASE_DIR / "output" / "ola_clean.parquet")
 
 df = load_data()
 
@@ -69,7 +74,7 @@ if "vehicle_type" in filtered_df.columns:
         x="vehicle_type",
         y="distance_km",
         title="Top 5 Vehicle Types by Distance",
-        text=vt["distance_km"].apply(lambda x: f"{x:,.0f} km")  # ✅ full numbers + km
+        text=vt["distance_km"].apply(lambda x: f"{x:,.0f} km")
     )
     fig.update_traces(textposition="outside")
     st.plotly_chart(fig, use_container_width=True)
@@ -81,7 +86,7 @@ if "customer_rating" in filtered_df.columns:
 
 # --- SQL Queries Viewer (Optional) ---
 st.sidebar.subheader("SQL Query Explorer")
-with open("../output/sql_queries.sql", "r") as f:
+with open(BASE_DIR / "output" / "sql_queries.sql", "r") as f:
     sql_queries = f.read().split("-- ")
 for q in sql_queries[1:]:  # first split is empty
     title, query = q.split("\n", 1)
@@ -91,14 +96,12 @@ for q in sql_queries[1:]:  # first split is empty
 # --- SQL Query Runner ---
 st.header("🔎 SQL Query Explorer")
 
-# Load your pre-generated SQL queries
-with open("../output/sql_queries.sql", "r") as f:
+with open(BASE_DIR / "output" / "sql_queries.sql", "r") as f:
     sql_queries = f.read().split("-- ")
 
 # Register dataframe as table in DuckDB
-import duckdb
 con = duckdb.connect()
-con.register("ola_clean", df)   # <-- table name matches your SQL queries
+con.register("ola_clean", df)
 
 for q in sql_queries[1:]:
     title, query = q.split("\n", 1)
@@ -116,4 +119,3 @@ for q in sql_queries[1:]:
             )
         except Exception as e:
             st.error(f"Query failed: {e}")
-
