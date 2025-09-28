@@ -3,6 +3,7 @@ SELECT *
 FROM ola_clean
 WHERE status_norm = 'success';
 
+
 -- Average ride distance for each vehicle type
 SELECT 
     vehicle_type, 
@@ -28,11 +29,13 @@ LIMIT 5;
 -- Number of rides cancelled by drivers due to personal and car-related issues
 SELECT 
     Incomplete_Rides_Reason, 
-    COUNT(*) AS total_cancellations
+    COUNT(*) AS total_incomplete
 FROM ola_clean
-WHERE status_norm = 'canceled by driver'
-  AND Incomplete_Rides_Reason IN ('personal issue', 'car issue')
+WHERE Incomplete_Rides_Reason IN ('Customer Demand', 'Vehicle Breakdown', 'Other Issue')
 GROUP BY Incomplete_Rides_Reason;
+
+
+
 
 -- Maximum and Minimum driver ratings for Prime Sedan bookings
 SELECT 
@@ -45,6 +48,7 @@ WHERE vehicle_type = 'Prime Sedan';
 SELECT *
 FROM ola_clean
 WHERE payment_method = 'UPI';
+
 
 -- Average customer rating per vehicle type
 SELECT 
